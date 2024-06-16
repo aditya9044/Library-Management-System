@@ -10,9 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TxnCreateRequest {
-    @NotBlank(message = "Student contact cannot be blank")
-    private String studentContact;
-
     @NotBlank(message = "Book Number cannot be blank")
     private String bookNo;
 

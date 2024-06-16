@@ -6,13 +6,20 @@ import org.gfg.jbdlMinor.model.Student;
 import org.gfg.jbdlMinor.repository.StudentRepository;
 import org.gfg.jbdlMinor.request.StudentCreateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class StudentService {
+public class StudentService implements UserDetailsService {
+
+    @Value("${student.authority}")
+    private String studentAuthority;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -22,6 +29,7 @@ public class StudentService {
         Student studentFromDB = null;
 
         if(studentList == null || studentList.isEmpty()){
+            studentCreateRequest.setAuthority(studentAuthority);
             studentFromDB = studentRepository.save(studentCreateRequest.toStudent());
             return studentFromDB;
         }
@@ -44,5 +52,14 @@ public class StudentService {
             default:
                 return new ArrayList<>();
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String phoneNo) throws UsernameNotFoundException {
+        List<Student> list = studentRepository.findByPhoneNo(phoneNo);
+        if(!list.isEmpty()){
+            return list.get(0);
+        }
+        return null;
     }
 }

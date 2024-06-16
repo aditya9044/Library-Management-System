@@ -3,6 +3,7 @@ package org.gfg.jbdlMinor.service;
 import org.gfg.jbdlMinor.model.*;
 import org.gfg.jbdlMinor.repository.AuthorRepository;
 import org.gfg.jbdlMinor.repository.BookRepository;
+import org.gfg.jbdlMinor.repository.RedisDataRepository;
 import org.gfg.jbdlMinor.request.BookCreateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ public class BookService {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private RedisDataRepository redisDataRepository;
+
     public Book createBook(BookCreateRequest bookCreateRequest) {
         Author authorFromDB = authorRepository.findByEmail(bookCreateRequest.getAuthorEmail());
 
@@ -29,8 +33,9 @@ public class BookService {
         //create a row in book
         Book book = bookCreateRequest.toBook();
         book.setAuthor(authorFromDB);
-        return bookRepository.save(book);
-
+        book = bookRepository.save(book);
+        redisDataRepository.setBookToRedis(book);
+        return book;
     }
 
     public List<Book> filter(FilterType filterBy, Operator operator, String value) {
@@ -38,6 +43,14 @@ public class BookService {
             case EQUALS :
                 switch (filterBy){
                     case BOOK_NO :
+                        List<Book> list = redisDataRepository.getBookByBookNo(value);
+                        if(list != null && !list.isEmpty()){
+                            return list;
+                        }
+                        list = bookRepository.findByBookNo(value);
+                        if(!list.isEmpty()){
+                            redisDataRepository.setBookToRedisByBookNo(list.get(0));
+                        }
                         return bookRepository.findByBookNo(value);
                     case AUTHOR_NAME:
                         return bookRepository.findByAuthorName(value);

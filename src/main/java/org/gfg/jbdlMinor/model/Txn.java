@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
@@ -13,7 +14,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-public class Txn {
+public class Txn implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

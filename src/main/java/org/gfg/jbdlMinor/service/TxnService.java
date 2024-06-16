@@ -3,6 +3,7 @@ package org.gfg.jbdlMinor.service;
 import java.util.concurrent.TimeUnit;
 import org.gfg.jbdlMinor.exception.TxnException;
 import org.gfg.jbdlMinor.model.*;
+import org.gfg.jbdlMinor.repository.RedisDataRepository;
 import org.gfg.jbdlMinor.repository.TxnRepository;
 import org.gfg.jbdlMinor.request.TxnCreateRequest;
 import org.gfg.jbdlMinor.request.TxnReturnRequest;
@@ -22,6 +23,9 @@ public class TxnService {
 
     @Autowired
     private BookService bookService;
+
+    @Autowired
+    private RedisDataRepository redisDataRepository;
 
     @Autowired
     private StudentService studentService;
@@ -52,9 +56,9 @@ public class TxnService {
     }
 
     @Transactional(rollbackFor = {TxnException.class})
-    public String create(TxnCreateRequest txnCreateRequest) throws TxnException {
+    public String create(TxnCreateRequest txnCreateRequest, Student student) throws TxnException {
 
-        Student studentFromDB = filterStudent(FilterType.CONTACT, Operator.EQUALS,txnCreateRequest.getStudentContact());
+        Student studentFromDB = filterStudent(FilterType.CONTACT, Operator.EQUALS,student.getPhoneNo());
 
         Book bookFromLib = filterBook(FilterType.BOOK_NO,Operator.EQUALS,txnCreateRequest.getBookNo());
 
@@ -75,6 +79,7 @@ public class TxnService {
         txn = txnRepository.save(txn);
         bookFromLib.setStudent(studentFromDB);
         bookService.saveUpdate(bookFromLib);
+        redisDataRepository.setBookToRedis(bookFromLib);
         return txn.getTxnId();
     }
 

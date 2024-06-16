@@ -15,12 +15,16 @@ public class StudentCreateRequest {
     private String email;
     private String phoneNo;
     private String address;
+    private String password;
+    private String authority;
 
     public Student toStudent() {
         return Student.builder().
                 name(this.name).
                 email(this.email).
                 phoneNo(this.phoneNo).
+                password(this.password).
+                authority(this.authority).
                 address(this.address).
                 status(StudentType.ACTIVE).
                 build();
